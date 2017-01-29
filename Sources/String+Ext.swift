@@ -1,15 +1,10 @@
 import Foundation
 
-internal extension String {
-
-    var fullRange: Range<String.Index> { return startIndex ..< endIndex }
-
+extension String {
     func range(_ nsRange : NSRange) -> Range<String.Index>? {
-        if  let utf16start = utf16.index(utf16.startIndex, offsetBy: nsRange.location, limitedBy: utf16.endIndex),
-            let utf16end = utf16.index(utf16start, offsetBy: nsRange.length, limitedBy: utf16.endIndex),
-            let start = String.Index(utf16start, within: self),
-            let end   = String.Index(utf16end,   within: self)
-        {
+        let utf16start = utf16.startIndex.advanced(by: nsRange.location)
+        let utf16end = utf16start.advanced(by: nsRange.length)
+        if let start = utf16start.samePosition(in: self), let end = utf16end.samePosition(in: self) {
             return start ..< end
         } else {
             return nil
@@ -17,9 +12,8 @@ internal extension String {
     }
 
     func nsRange(_ range: Range<String.Index>) -> NSRange {
-        let utf16start = String.UTF16View.Index(range.lowerBound, within: utf16)
-        let utf16end   = String.UTF16View.Index(range.upperBound, within: utf16)
-        return NSRange(location: utf16.distance(from: utf16.startIndex, to: utf16start), length: utf16.distance(from: utf16start, to: utf16end))
+        let utf16start = range.lowerBound.samePosition(in: utf16)
+        let utf16end   = range.upperBound.samePosition(in: utf16)
+        return NSRange(location: utf16.startIndex.distance(to: utf16start), length: utf16start.distance(to: utf16end))
     }
-
 }
